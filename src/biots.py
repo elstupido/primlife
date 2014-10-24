@@ -447,8 +447,6 @@ class BiotArm:
             
             node    = armSegment.get('node')
             exists  = armSegment.get('exists')
-            depth   = armSegment.get('depth')
-            type    = armSegment.get('type')
             color   = armSegment.get('color')
 
             
