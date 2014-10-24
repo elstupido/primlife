@@ -40,7 +40,7 @@ def genRandomSegmentGenes(num_levels):
                           'length'       : _choose_value(None,[Random().randint(5, 20)]),
                           'energy'       : 100,
                           'seg_id'       : seg,
-                          'movecounter'  : 100,
+                          'movecounter'  : _choose_value(None,[Random().randint(10, 200)]),
                          }
     return segGenes
 
@@ -70,12 +70,12 @@ def mutate_num_arms(parentGene):
         new_arms = 2
     if new_arms > 6:
         new_arms = 6
-    return new_arms
+    return _choose_value(parent_arms,[new_arms])
 
 def mutate_branchfactor(parentGene):
     parent_branchfactor = parentGene['branchfactor']
-    new_branchfactor = parent_branchfactor + (Random().random()/100 * Random().randint(-1,1))
-    return new_branchfactor
+    new_branchfactor = parent_branchfactor + (Random().random()/10 * Random().randint(-1,1))
+    return _choose_value(parent_branchfactor, [new_branchfactor])
 
 def mutate_size(parentGene):
     return 30
@@ -129,7 +129,7 @@ def mutate_segGenes(segGenes,num_levels):
     return newGene
 
 def mutate_movecounter(movecount):
-    return movecount + (Random().randint(-1, 1) * 10)
+    return _choose_value(movecount,[movecount + (Random().randint(-1, 1) * 10)])
 
 def mutate_color(segGene):
     parentColor = segGene['color']
