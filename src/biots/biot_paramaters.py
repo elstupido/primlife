@@ -24,6 +24,3 @@ class BiotParams:
     RED_LOSS_PER_TICK = 1
     BLUE_LOSS_PER_TICK = 1
     CYAN_LOSS_PER_TICK = 1
-    
-    
-
