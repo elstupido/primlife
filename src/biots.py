@@ -3,6 +3,7 @@ import random
 import math
 from Box2D import b2Vec2
 from biots.genes import genRandomBiotGene, mutate
+from biots.biot_paramaters import BiotParams
 
 
 global PIXEL_SCALE
@@ -12,6 +13,7 @@ PIXEL_SCALE = 0.5 #just guessing here
 MAX_DEPTH = 6
 DEBUG = False
 
+bp = BiotParams()
 
 
 background_colour = (0,0,0)
@@ -118,8 +120,8 @@ def collide(p1, p2):
 class Biot:
     #a biot is a collection of segments
     
-    MAX_SEGMENTS = 10
-    MAX_SYMMETRY = 8
+    MAX_SEGMENTS = bp.MAX_SEGMENTS
+    MAX_SYMMETRY = bp.MAX_SYMMETRY
     
     def __init__(self,x,y,father=None):
         
@@ -133,7 +135,7 @@ class Biot:
         self.arms = []
         self.initial_energy = 0
         self.updated = 0
-        self.MAX_UPDATES = 500
+        self.MAX_UPDATES = bp.MAX_UPDATES
         self.extraEnergy = 0
         if father:
             biotGene = mutate(father)
@@ -189,7 +191,7 @@ class Biot:
            return self
 
     def bounce(self):
-        if self.x > width - self.size:
+        if self.x > width:
             self.x = self.size
             self.speed *= elasticity
 
@@ -217,21 +219,21 @@ class Biot:
             if my_arm.idBiot[node1]['color'] == (255,0,0):
                 if DEBUG:
                     print "destroying Nodes: %s " % (node2)
-                if your_arm.idBiot[node2]['energy'] < 10:
+                if your_arm.idBiot[node2]['energy'] < bp.DEATH_ENERGY:
                     your_arm.destroyNode(node2)
                     your_arm.idBiot[node2]['energy'] = 0
                 else:
-                    your_arm.idBiot[node2]['energy'] -= 200
-                    my_arm.idBiot[node1]['energy'] += 500 
+                    your_arm.idBiot[node2]['energy'] -= bp.ENERGY_LOST_FROM_ATTACK
+                    my_arm.idBiot[node1]['energy'] += bp.ENERGY_GAINED_FROM_ATTACK 
             if your_arm.idBiot[node2]['color'] == (255,0,0):
                 if DEBUG:
                     print "destroying Nodes: %s " % (node1)
-                if my_arm.idBiot[node1]['energy'] < 10:
+                if my_arm.idBiot[node1]['energy'] < bp.DEATH_ENERGY:
                     my_arm.destroyNode(node1)
                     my_arm.idBiot[node1]['energy'] = 0
                 else:
-                    my_arm.idBiot[node1]['energy'] -= 200
-                    your_arm.idBiot[node2]['energy'] += 500
+                    my_arm.idBiot[node1]['energy'] -= bp.ENERGY_LOST_FROM_ATTACK
+                    your_arm.idBiot[node2]['energy'] += bp.ENERGY_GAINED_FROM_ATTACK
             return True
         else:
             return False
@@ -249,7 +251,7 @@ class Biot:
         energy = 0
         for a in self.arms:
             energy += a.extraEnergy
-        if energy > self.initial_energy * 1.50:
+        if energy > self.initial_energy * bp.REPRODUCTION_RATE:
             self.extraEnergy = 0
             self.updated = self.MAX_UPDATES
             for a in self.arms:
@@ -300,8 +302,8 @@ class BiotArm:
         self.size = size
         self.gene = gene
         self.drawAngle = self.gene['angle']
-        self.segmentMaxEnergy = 200
-        self.segmentMinEnergy = 100
+        self.segmentMaxEnergy = bp.MAX_SEGMENT_ENERGY
+        self.segmentMinEnergy = bp.MIN_SEGMENT_ENERGY
         
         self.idBiot = {}
         self.points = {}
@@ -325,13 +327,13 @@ class BiotArm:
     def caclulateEnergyGain(self):
         for node, info in [ (node, info) for node,info in self.idBiot.iteritems() if info['exists']]:
             if info['color'] == (0,255,0):
-                info['energy'] += 3
+                info['energy'] -= bp.GREEN_LOSS_PER_TICK
             elif info['color'] == (255,0,0):
-                info['energy'] -= 1
+                info['energy'] -= bp.RED_LOSS_PER_TICK
             elif info['color'] == (0,0,255):
-                info['energy'] -= 1
+                info['energy'] -= bp.BLUE_LOSS_PER_TICK
             elif info['color'] == (0,255,255):
-                info['energy'] -= 1
+                info['energy'] -= bp.CYAN_LOSS_PER_TICK
             if info['energy'] < 10:
                 self.destroyNode(node)
     
