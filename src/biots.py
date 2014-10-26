@@ -6,8 +6,9 @@ from biots.genes import genRandomBiotGene, mutate
 from biots.biot_paramaters import BiotParams
 
 
+
 global PIXEL_SCALE
-PIXEL_SCALE = 0.5 #just guessing here
+PIXEL_SCALE = 1 #just guessing here
 
 #BIOT MAX DEPTH
 MAX_DEPTH = 6
@@ -192,7 +193,7 @@ class Biot:
 
     def bounce(self):
         if self.x > width:
-            self.x = self.size
+            self.x = self.size +10
             self.speed *= elasticity
 
         elif self.x < self.size:
@@ -200,7 +201,7 @@ class Biot:
             self.speed *= elasticity
 
         if self.y > height - self.size:
-            self.y = self.size
+            self.y = self.size + 10
             self.speed *= elasticity
 
         elif self.y < self.size:
@@ -224,7 +225,9 @@ class Biot:
                     your_arm.idBiot[node2]['energy'] = 0
                 else:
                     your_arm.idBiot[node2]['energy'] -= bp.ENERGY_LOST_FROM_ATTACK
-                    my_arm.idBiot[node1]['energy'] += bp.ENERGY_GAINED_FROM_ATTACK 
+                    my_arm.idBiot[node1]['energy'] += bp.ENERGY_GAINED_FROM_ATTACK
+            elif my_arm.idBiot[node1]['color'] == (0,255,0):
+                my_arm.destroyNode(node1) 
             if your_arm.idBiot[node2]['color'] == (255,0,0):
                 if DEBUG:
                     print "destroying Nodes: %s " % (node1)
@@ -234,6 +237,8 @@ class Biot:
                 else:
                     my_arm.idBiot[node1]['energy'] -= bp.ENERGY_LOST_FROM_ATTACK
                     your_arm.idBiot[node2]['energy'] += bp.ENERGY_GAINED_FROM_ATTACK
+            elif your_arm.idBiot[node2]['color'] == (0,255,0):
+                your_arm.destroyNode(node2)
             return True
         else:
             return False
@@ -490,7 +495,7 @@ def main():
         if b:
             father = b
         else:
-            father = Biot(100,100)
+            father = Biot(200,100)
         
         for baby in range(num):
             angle = (baby + 1) * math.pi * 1/(num / 2)
@@ -499,16 +504,17 @@ def main():
     #             print "new biot %s,%s %s" % (x,y,[b.findArm(x,y) for b in biots if b.findArm(x,y) is not None])
                 new_biots.append(Biot(x,y,father.gene))
         return new_biots
-     
-    highlight = (0,0,0)
+    
     selected_biot = None
-    mouse_down = False
+    move_biot = None
      
     from timeit import default_timer as timer
      
     running = True
     while running:
         #check if we need to exit
+                #wipe last frame
+        screen.fill(background_colour)
         start = timer()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -524,9 +530,11 @@ def main():
                     print search
                 if search:
                     selected_biot = search[0]
+                    move_biot = search[0]
+                else:
+                    selected_biot = None  
             elif event.type == pygame.MOUSEBUTTONUP:
-                selected_biot = None
-                highlight = (0,0,0)
+                move_biot = None
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_n:
                     if DEBUG:
@@ -534,33 +542,41 @@ def main():
                     biots = makeBiots(None,4)
          
         if selected_biot:
-            (mx, my) = pygame.mouse.get_pos()
-            dx = mx - selected_biot.x
-            dy = my - selected_biot.y
-            selected_biot.angle = 0.5*math.pi + math.atan2(dy,dx)
-            selected_biot.speed = math.hypot(dx,dy) * 0.1
+            if selected_biot in biots:
+                pygame.draw.rect(screen, (0,0,255), selected_biot.boundingBox, 1)
+                energy = debug_font.render("energy-> %s" % (selected_biot.extraEnergy), True, (255,255,255))
+                age = debug_font.render("age-> %s" % (selected_biot.updated), True, (255,255,255))
+                screen.blit(energy,(selected_biot.boundingBox.x,selected_biot.boundingBox.y))
+                screen.blit(age, (selected_biot.boundingBox.x, selected_biot.boundingBox.y + energy.get_size()[1]))
      
-        #wipe last frame
-        screen.fill(background_colour)
+        if move_biot:
+            (mx, my) = pygame.mouse.get_pos()
+            dx = mx - move_biot.x
+            dy = my - move_biot.y
+            move_biot.angle = 0.5*math.pi + math.atan2(dy,dx)
+            move_biot.speed = math.hypot(dx,dy) * 0.1
+
          
         for i,b in enumerate(biots):
-            b.update()
             if b.isDead():
     #             print "%s has died" % b
                 biots.remove(b)
                 continue
+            b.update()
             for b2 in biots[i+1:]:
                 collide(b, b2)
             if b.reproduce() and len(biots) < MAX_BIOTS:
                 biots += makeBiots(b,2)
                 
                 
+        if not biots:
+           biots = makeBiots(None, 4)
         
         total_biots = debug_font.render('Total Biots: %s' % len(biots),False,(255,255,255) )
         screen.blit(total_biots,(1,1))
              
         end = timer()
-        loop_timer = debug_font.render("time: %s" % (end - start),False,(255,255,255) ) 
+        loop_timer = debug_font.render("time: %s" % round((end - start),3),False,(255,255,255) ) 
         screen.blit(loop_timer,(1,height-loop_timer.get_size()[1]))
         #do the flip
         pygame.display.flip()

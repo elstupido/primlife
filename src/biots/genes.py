@@ -36,12 +36,13 @@ def genRandomSegmentGenes(num_levels):
     segGenes = {}
     for seg in range(num_levels):
         segGenes[seg] = { 'branchfactor' : _choose_value(None,[(2*math.pi/Random().randint(2, 14))]), 
-                          'color'        : _get_color(None), 
+                          'color'        : _get_color((0,255,0)), 
                           'length'       : _choose_value(None,[Random().randint(5, 20)]),
-                          'energy'       : 100,
+                          'energy'       : 0,
                           'seg_id'       : seg,
                           'movecounter'  : _choose_value(None,[Random().randint(10, 200)]),
                          }
+        segGenes[seg]['energy'] = mutate_energy(segGenes[seg])
     return segGenes
 
 def _choose_value(parentValue,mutatedValueList):
@@ -144,12 +145,15 @@ def _get_color(parentColor):
     green = [(0,255,0)]
     blue = [(0,0,255)]
     cyan = [(0,255,255)]
-    biglist = parentColor * 1000 + red * 1 + green * 3 + blue * 1 + cyan * 1
+    biglist = parentColor * 1000 + red * 1 + green * 1 + blue * 1 + cyan * 1
     return choice(biglist)  
 
 
 def mutate_energy(segGene):
-    return 100
+    if segGene['color'] == (0,255,0):
+        return 10
+    else:
+        return 100
 
 def mutate_length(segGene):
     parentLen = segGene['length']
