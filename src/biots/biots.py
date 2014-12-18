@@ -258,9 +258,12 @@ class Biot:
             energy += a.extraEnergy
         if energy > self.initial_energy * bp.REPRODUCTION_RATE:
             self.extraEnergy = 0
-            self.updated = self.MAX_UPDATES
+            
+            #self.updated = self.MAX_UPDATES
             for a in self.arms:
                 a.extraEnergy = 0
+                for node in a.idBiot:
+                    a.idBiot[node]['energy'] = 11
             return True
         else:
             return False            
@@ -560,7 +563,7 @@ def main():
          
         for i,b in enumerate(biots):
             if b.isDead():
-    #             print "%s has died" % b
+                print "%s has died" % b
                 biots.remove(b)
                 continue
             b.update()
