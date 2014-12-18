@@ -563,7 +563,7 @@ def main():
          
         for i,b in enumerate(biots):
             if b.isDead():
-                print "%s has died" % b
+#                 print "%s has died" % b
                 biots.remove(b)
                 continue
             b.update()

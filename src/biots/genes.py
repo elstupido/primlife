@@ -40,7 +40,7 @@ def genRandomSegmentGenes(num_levels):
                           'length'       : _choose_value(None,[Random().randint(5, 20)]),
                           'energy'       : 0,
                           'seg_id'       : seg,
-                          'movecounter'  : _choose_value(None,[Random().randint(10, 200)]),
+                          'movecounter'  : _choose_value(None,[Random().randint(3, 50)]),
                          }
         segGenes[seg]['energy'] = mutate_energy(segGenes[seg])
     return segGenes

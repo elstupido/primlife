@@ -8,7 +8,7 @@ class BiotParams:
     #age
     MAX_UPDATES = 300
     #means you need extra > 150% * initial energy to reproduce
-    REPRODUCTION_RATE = 1.50
+    REPRODUCTION_RATE = 2
     
     #segment attack/die params
     DEATH_ENERGY = 10
