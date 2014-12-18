@@ -145,7 +145,7 @@ def _get_color(parentColor):
     green = [(0,255,0)]
     blue = [(0,0,255)]
     cyan = [(0,255,255)]
-    biglist = parentColor * 1000 + red * 1 + green * 1 + blue * 1 + cyan * 1
+    biglist = parentColor * 10000 + red * 12 + green * 10 + blue * 10 + cyan * 10
     return choice(biglist)  
 
 
