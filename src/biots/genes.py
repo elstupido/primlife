@@ -16,7 +16,7 @@ def genRandomBiotGene():
     gene['armGenes'] = genRandomArmGenes(gene['num_arms'])
     
     #always place arms equally far apart
-    for arm,armGene in gene['armGenes'].iteritems():
+    for arm,armgene in gene['armGenes'].iteritems():
         gene['armGenes'][arm]['angle'] = (arm + 1) * math.pi * 1/(gene['num_arms'] / 2)
         
     return gene 

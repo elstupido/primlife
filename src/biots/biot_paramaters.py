@@ -6,7 +6,7 @@ class BiotParams:
     MAX_SEGMENTS = 10
     MAX_SYMMETRY = 8
     #age
-    MAX_UPDATES = 300
+    MAX_UPDATES = 250
     #means you need extra > 150% * initial energy to reproduce
     REPRODUCTION_RATE = 2
     

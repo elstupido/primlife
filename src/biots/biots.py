@@ -1,7 +1,7 @@
 import pygame
 import random
 import math
-from Box2D import b2Vec2
+# from Box2D import b2Vec2
 from genes import genRandomBiotGene, mutate
 from biot_paramaters import BiotParams
 
@@ -31,24 +31,24 @@ pygame.init()
 debug_font = pygame.font.Font(pygame.font.match_font('calibri'),12)
 
 
-def addVectorsB2((angle1, length1), (angle2, length2)):
-    
-#     v1= b2Vec2(x,y)
-#     v2= b2Vec2(x2,y2)
-#     v3 = v1 * length1 + v2 * length2
+# def addVectorsB2((angle1, length1), (angle2, length2)):
+#     
+# #     v1= b2Vec2(x,y)
+# #     v2= b2Vec2(x2,y2)
+# #     v3 = v1 * length1 + v2 * length2
+# #     b2angle = math.atan2(v3.x,v3.y)
+# #     b2length = math.hypot(v3.x,v3.y)    
+#     
+#     #now faster with box2d!
+#     v1 = b2Vec2(length1*math.sin(angle1), length1*math.cos(angle1))
+#     v2 = b2Vec2(length2*math.sin(angle2), length2*math.cos(angle2))
+# 
+#     v3 = v1 + v2
+#         
 #     b2angle = math.atan2(v3.x,v3.y)
-#     b2length = math.hypot(v3.x,v3.y)    
-    
-    #now faster with box2d!
-    v1 = b2Vec2(length1*math.sin(angle1), length1*math.cos(angle1))
-    v2 = b2Vec2(length2*math.sin(angle2), length2*math.cos(angle2))
-
-    v3 = v1 + v2
-        
-    b2angle = math.atan2(v3.x,v3.y)
-    b2length = math.hypot(v3.x,v3.y)
-
-    return (b2angle, b2length)
+#     b2length = math.hypot(v3.x,v3.y)
+# 
+#     return (b2angle, b2length)
 
 #this is black mojo from the internets
 #thanks to this guy: http://bryceboe.com/2006/10/23/line-segment-intersection-algorithm/
@@ -245,7 +245,7 @@ class Biot:
 
 #TODO: there has got to be a way to make this faster
     def collide_line(self,other_biot):
-        for my_arm in self.arms:
+        for i,my_arm in enumerate(self.arms):
             for node1,line1 in [ (node1,line1) for node1,line1 in my_arm.points.iteritems() if my_arm.idBiot[node1]['exists'] ]:
                 for your_arm in other_biot.arms:
                     for node2,line2 in [ (node2,line2) for node2,line2 in your_arm.points.iteritems() if your_arm.idBiot[node2]['exists'] ]:
@@ -269,11 +269,8 @@ class Biot:
             return False            
 
     def rebalanceArmEnergy(self):
-        energy = 0
-        for a in self.arms:
-            energy += a.extraEnergy
-        self.extraEnergy = energy
-        energy = energy / len(self.arms)
+        self.extraEnergy = sum([ a.extraEnergy for a in self.arms ] )
+        energy = self.extraEnergy / len(self.arms)
         for a in self.arms:
             a.extraEnergy = energy
 
@@ -327,10 +324,7 @@ class BiotArm:
         self.genBiot(angle=self.drawAngle,level=self.gene['num_levels']-1)
 
     def getEnergy(self):
-        energy = 0
-        for seg, info in self.idBiot.iteritems():
-            energy += info['energy']
-        return energy
+        return sum([ info['energy'] for seg,info in self.idBiot.iteritems() ])
 
     def caclulateEnergyGain(self):
         for node, info in [ (node, info) for node,info in self.idBiot.iteritems() if info['exists']]:
@@ -486,7 +480,7 @@ def main():
     screen = pygame.display.set_mode((width, height))            
     pygame.display.set_caption('Biots')
     clock=pygame.time.Clock()
-    TARGET_FPS = 30
+    TARGET_FPS = 60
     MAX_BIOTS = 100
     
     
@@ -504,8 +498,8 @@ def main():
             num = num + 1
             angle = (baby + 1) * math.pi * 1/(num / 2)
             x,y = (math.cos(angle)*spacing + father.boundingBox.x,math.sin(angle)*spacing+father.boundingBox.y)
-            if not [b.findArm(x,y) for b in biots if b.findArm(x,y) is not None]:
-    #             print "new biot %s,%s %s" % (x,y,[b.findArm(x,y) for b in biots if b.findArm(x,y) is not None])
+            if all([not(b.findArm(x,y)) for b in biots]):
+               # print "new biot %s,%s %s" % (x,y,[b.findArm(x,y) for b in biots if b.findArm(x,y) is not None])
                 new_biots.append(Biot(x,y,father.gene))
         return new_biots
     
@@ -569,11 +563,19 @@ def main():
             b.update()
             for b2 in biots[i+1:]:
                 collide(b, b2)
-            if b.reproduce() and len(biots) < MAX_BIOTS:
-                if random.random() > 0.9:
-                    biots += makeBiots(b,3)
-                else:
-                    biots += makeBiots(b,1)
+            if len(biots) > MAX_BIOTS:
+                    biots.remove(b)
+                    continue
+                
+            if b.reproduce():
+                if random.random() > 0.7:
+                    babies = makeBiots(b,3)
+                    if babies:
+                        biots += babies
+                    else:
+                        #kill if cant reproduce prevent overcrowding
+                #        print('overcrowded')
+                        biots.remove(b)
                 
                 
         if not biots:
@@ -590,5 +592,7 @@ def main():
         clock.tick(TARGET_FPS)
 
 if __name__ == '__main__':
-    main()
+    import cProfile
+    cProfile.run('main()', filename='e:/python278/biots.profile')
+    
     
