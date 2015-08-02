@@ -1,7 +1,7 @@
 import pygame
 import random
 import math
-# from Box2D import b2Vec2
+from Box2D import b2Vec2
 from genes import genRandomBiotGene, mutate
 from biot_paramaters import BiotParams
 
@@ -45,7 +45,7 @@ debug_font = pygame.font.Font(pygame.font.match_font('calibri'),12)
 # 
 #     v3 = v1 + v2
 #         
-#     b2angle = math.atan2(v3.x,v3.y)
+#     b2angle = math.atan2(v3.x,v3.y)*
 #     b2length = math.hypot(v3.x,v3.y)
 # 
 #     return (b2angle, b2length)
