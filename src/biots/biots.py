@@ -423,6 +423,9 @@ class BiotArm:
                                   'movecounter'     : gene['movecounter'],
                                   'seg_id'          : level,
                                  } 
+            
+            self.idBiot[name]['offset'] = self.computeParentOffsetID(name)
+            
             if (level-1) > 0:
                 self.idBiot[name]['children'] = ( (name+"m") , (name+"p") )
             else:
@@ -482,12 +485,12 @@ class BiotArm:
             
             node    = armSegment.get('node')
             exists  = armSegment.get('exists')
-            depth   = armSegment.get('depth')
-            type    = armSegment.get('type')
+#             depth   = armSegment.get('depth')
+#             type    = armSegment.get('type')
             color   = armSegment.get('color')
 
             
-            (px,py) = self.computeParentOffsetID(nodeid)
+            (px,py) = armSegment['offset']
             x1 = int(px*PIXEL_SCALE + x)
             y1 = int(py*PIXEL_SCALE + y)
             x2 = int(node.x * PIXEL_SCALE + x1)  
