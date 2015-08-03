@@ -4,6 +4,7 @@ import math
 MAX_LEVELS = 4
 HERIDITARY_WEIGHT = 100
 MUTATED_WEIGHT = 1
+random_negative = Random().randint(-1,1)
 
 
 def genRandomBiotGene():
@@ -75,7 +76,7 @@ def mutate_num_arms(parentGene):
 
 def mutate_branchfactor(parentGene):
     parent_branchfactor = parentGene['branchfactor']
-    new_branchfactor = parent_branchfactor + (Random().random()/10 * Random().randint(-1,1))
+    new_branchfactor = parent_branchfactor + 0.1 * random_negative
     return _choose_value(parent_branchfactor, [new_branchfactor])
 
 def mutate_size(parentGene):
@@ -114,6 +115,7 @@ def mutate_num_levels(armGene):
 
 def mutate_segGenes(segGenes,num_levels):
     newGene = {}
+    random_negative = Random().randint(-1,1)
     for seg, segGene in segGenes.iteritems():
         newGene[seg] = {}
         newGene[seg]['color'] = mutate_color(segGene)
@@ -130,7 +132,7 @@ def mutate_segGenes(segGenes,num_levels):
     return newGene
 
 def mutate_movecounter(movecount):
-    return _choose_value(movecount,[movecount + (Random().randint(-1, 1) * 10)])
+    return _choose_value(movecount,[movecount + (random_negative * 10)])
 
 def mutate_color(segGene):
     parentColor = segGene['color']
@@ -145,7 +147,7 @@ def _get_color(parentColor):
     green = [(0,255,0)]
     blue = [(0,0,255)]
     cyan = [(0,255,255)]
-    biglist = parentColor * 10000 + red * 12 + green * 10 + blue * 10 + cyan * 10
+    biglist = parentColor * 100 + red * 2 + green * 1 + blue * 1 + cyan * 1
     return choice(biglist)  
 
 
@@ -157,7 +159,7 @@ def mutate_energy(segGene):
 
 def mutate_length(segGene):
     parentLen = segGene['length']
-    return _choose_value(parentLen, [parentLen + ( 1 * Random().randint(-1,1) )] )
+    return _choose_value(parentLen, [parentLen + ( 1 * random_negative )] )
 
 # 
 # import pprint
