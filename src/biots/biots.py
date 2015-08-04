@@ -150,8 +150,35 @@ class Biot:
         for arm in range(biotGene['num_arms']):
             self.arms.append(BiotArm(self.x*(1/PIXEL_SCALE),self.y*(1/PIXEL_SCALE),size=biotGene['size'],gene=biotGene['armGenes'][arm]))
         
-        for a in self.arms:
-            self.initial_energy += a.getEnergy()       
+        for arm in self.arms:
+            list_of_x = set()
+            list_of_y = set()
+            self.initial_energy += arm.getEnergy()
+            for nodeid, armSegment in sorted(arm.idBiot.iteritems()):
+                node = armSegment['node']
+                (px,py) = armSegment['offset']
+                x1 = int(px*PIXEL_SCALE + x)
+                y1 = int(py*PIXEL_SCALE + y)
+                x2 = int(node.x * PIXEL_SCALE + x1)  
+                y2 = int(node.y * PIXEL_SCALE + y1)
+    
+                      
+                list_of_x.add(x1)
+                list_of_x.add(x2)
+                list_of_y.add(y1)
+                list_of_y.add(y2)
+                
+
+            arm.minx = sorted(list_of_x)[0]
+            arm.miny = sorted(list_of_y)[0]
+            arm.maxx = sorted(list_of_x,reverse=True)[0]
+            arm.maxy = sorted(list_of_y,reverse=True)[0]
+                
+            if self.boundingBox:
+                self.boundingBox.union_ip(pygame.Rect(arm.minx,arm.miny,arm.maxx-arm.minx,arm.maxy-arm.miny))
+            else:
+                self.boundingBox = pygame.Rect(arm.minx,arm.miny,arm.maxx-arm.minx,arm.maxy-arm.miny) 
+                   
     
     def isDead(self):
         dead = True
@@ -318,6 +345,7 @@ class BiotArm:
         self.extraEnergy = 0
         
         self.genBiot(angle=self.drawAngle,level=self.gene['num_levels']-1)
+                
 
     def getEnergy(self):
         energy = 0
@@ -527,7 +555,8 @@ def makeBiots(b,num):
         angle = (baby + 1) * math.pi * 1/(num / 2)
         x,y = (math.cos(angle)*spacing + father.boundingBox.x,math.sin(angle)*spacing+father.boundingBox.y)
 #         print "new biot %s,%s %s" % (x,y,[b.findArm(x,y) for b in biots if b.findArm(x,y) is not None])
-        new_biots.append(Biot(x,y,father.gene))
+        newb = Biot(x,y,father.gene)
+        new_biots.append(newb)
     return new_biots
 
 
@@ -583,7 +612,7 @@ def main():
     pygame.display.set_caption('Biots')
     clock=pygame.time.Clock()
     TARGET_FPS = 30
-    MAX_BIOTS = 50
+    MAX_BIOTS = 200
     
     biots = [Biot(100,100)]
     
@@ -638,7 +667,13 @@ def main():
             for b2 in biots[i+1:]:
                 collide_main(b, b2)
             if b.reproduce() and len(biots) < MAX_BIOTS:
-                biots += makeBiots(b,2)
+                newbs = makeBiots(b,2)
+                for i2,b2 in enumerate(biots):
+                    for ni,nb in enumerate(newbs):
+                        if nb.boundingBox.colliderect(b2.boundingBox):
+                            newbs.remove(nb)
+                for newb in newbs:
+                    biots.append(newb)
                 
                 
         

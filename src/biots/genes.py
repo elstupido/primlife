@@ -2,16 +2,22 @@ from random import Random, choice
 import math
 
 MAX_LEVELS = 4
-HERIDITARY_WEIGHT = 100
+HERIDITARY_WEIGHT = 0
 MUTATED_WEIGHT = 1
 random_negative = Random().randint(-1,1)
+ran = Random()
 
+
+def shouldMutate(random_num,mutate_range):
+    (low,high) = mutate_range
+    return low < random_num < high
+    
 
 def genRandomBiotGene():
     gene = {
-                 'num_arms'         : Random().randint(2,6),
-                 'branchfactor'     : (2*math.pi/Random().randint(2, 14)),
-                 'size'             : Random().randint(2, 10),
+                 'num_arms'         : ran.randint(2,6),
+                 'branchfactor'     : (2*math.pi/ran.randint(2, 14)),
+                 'size'             : ran.randint(2, 10),
                  'armGenes'         : {}
                  }
     gene['armGenes'] = genRandomArmGenes(gene['num_arms'])
@@ -25,7 +31,7 @@ def genRandomBiotGene():
 def genRandomArmGenes(num_arms):
     armGenes = {}
     for arm in range(num_arms):
-        armGenes[arm] = {  'num_levels' : Random().randint(2,MAX_LEVELS),
+        armGenes[arm] = {  'num_levels' : ran.randint(2,MAX_LEVELS),
                            'angle' : None,
                            'segGenes' : {},
                            'arm_id'    : arm
@@ -36,12 +42,12 @@ def genRandomArmGenes(num_arms):
 def genRandomSegmentGenes(num_levels):
     segGenes = {}
     for seg in range(num_levels):
-        segGenes[seg] = { 'branchfactor' : _choose_value(None,[(2*math.pi/Random().randint(2, 14))]), 
+        segGenes[seg] = { 'branchfactor' : _choose_value(None,[(2*math.pi/ran.randint(2, 14))]), 
                           'color'        : _get_color((0,255,0)), 
-                          'length'       : _choose_value(None,[Random().randint(5, 20)]),
+                          'length'       : _choose_value(None,[ran.randint(5, 20)]),
                           'energy'       : 0,
                           'seg_id'       : seg,
-                          'movecounter'  : _choose_value(None,[Random().randint(3, 50)]),
+                          'movecounter'  : _choose_value(None,[ran.randint(3, 50)]),
                          }
         segGenes[seg]['energy'] = mutate_energy(segGenes[seg])
     return segGenes
@@ -57,17 +63,20 @@ def _choose_value(parentValue,mutatedValueList):
 
 
 def mutate(parentGene):
-    newGene = {}
-    for key, value in parentGene.iteritems():
-        if key == 'armGenes':
-            continue
-        newGene[key] = eval('mutate_%s(parentGene)' % (key))
-    newGene['armGenes'] = mutate_armGenes(parentGene,newGene['num_arms'])
-    return newGene
+    if shouldMutate(ran.randint(1, 100000), (1,5000)):
+        newGene = {}
+        for key, value in parentGene.iteritems():
+            if key == 'armGenes':
+                continue
+            newGene[key] = eval('mutate_%s(parentGene)' % (key))
+        newGene['armGenes'] = mutate_armGenes(parentGene,newGene['num_arms'])
+        return newGene
+    else:
+        return parentGene
 
 def mutate_num_arms(parentGene):
     parent_arms = parentGene['num_arms']
-    new_arms = parent_arms + ( 1 * Random().randint(-1,1) )
+    new_arms = parent_arms + ( 1 * ran.randint(-1,1) )
     if new_arms < 2:
         new_arms = 2
     if new_arms > 6:
@@ -83,6 +92,7 @@ def mutate_size(parentGene):
     return 30
 
 def mutate_armGenes(parentGene,num_arms):
+
     newGene = {}
     for arm,armGene in parentGene['armGenes'].iteritems():
         newGene[arm] = {}
@@ -105,7 +115,7 @@ def mutate_armGenes(parentGene,num_arms):
 
 def mutate_num_levels(armGene):
     parent_levels = armGene['num_levels']
-    newlevel = parent_levels + ( 1 * Random().randint(-1,1) )
+    newlevel = parent_levels + ( 1 * ran.randint(-1,1) )
     if newlevel > MAX_LEVELS:
         newlevel = MAX_LEVELS
     if newlevel < 2:
@@ -115,7 +125,7 @@ def mutate_num_levels(armGene):
 
 def mutate_segGenes(segGenes,num_levels):
     newGene = {}
-    random_negative = Random().randint(-1,1)
+    random_negative = ran.randint(-1,1)
     for seg, segGene in segGenes.iteritems():
         newGene[seg] = {}
         newGene[seg]['color'] = mutate_color(segGene)
