@@ -88,10 +88,9 @@ def addVectors((angle1, length1), (angle2, length2)):
     return (angle, length)
 
 def collide_main(p1, p2):
-    dx = p1.x - p2.x
-    dy = p1.y - p2.y
-    
     if p1.boundingBox.colliderect(p2.boundingBox):
+            dx = p1.x - p2.x
+            dy = p1.y - p2.y
             p1.collide(p2)
             tangent = math.atan2(dy, dx)
             angle = 0.5 * math.pi + tangent
@@ -279,11 +278,12 @@ class Biot:
         energy = 0
         for a in self.arms:
             energy += a.extraEnergy
-        if energy > self.initial_energy * 1.50:
+            a.extraEnergy = 0
+        
+        if energy > self.initial_energy:
             self.extraEnergy = 0
             self.updated = self.MAX_UPDATES
-            for a in self.arms:
-                a.extraEnergy = 0
+
             return True
         else:
             return False            
@@ -291,7 +291,7 @@ class Biot:
     def rebalanceArmEnergy(self):
         energy = 0
         for a in self.arms:
-            energy += a.extraEnergy
+            energy += a.getEnergy()
         self.extraEnergy = energy
         energy = energy / len(self.arms)
         for a in self.arms:
@@ -509,12 +509,10 @@ class BiotArm:
         count = 0
         
         
-        for nodeid, armSegment in sorted(self.idBiot.iteritems()):
+        for nodeid, armSegment in self.idBiot.iteritems():
             
             node    = armSegment.get('node')
             exists  = armSegment.get('exists')
-#             depth   = armSegment.get('depth')
-#             type    = armSegment.get('type')
             color   = armSegment.get('color')
 
             
@@ -529,15 +527,16 @@ class BiotArm:
             list_of_x.add(x2)
             list_of_y.add(y1)
             list_of_y.add(y2)
+            
             if exists:
                 pygame.draw.line(screen, color, (x1,y1), (x2,y2), 1)
             self.points[nodeid] = ((x1,y1),(x2,y2))
             
 
-        self.minx = sorted(list_of_x)[0]
-        self.miny = sorted(list_of_y)[0]
-        self.maxx = sorted(list_of_x,reverse=True)[0]
-        self.maxy = sorted(list_of_y,reverse=True)[0]
+        self.minx = min(list_of_x)
+        self.miny = min(list_of_y)
+        self.maxx = max(list_of_x)
+        self.maxy = max(list_of_y)
         
              
 
@@ -612,7 +611,7 @@ def main():
     pygame.display.set_caption('Biots')
     clock=pygame.time.Clock()
     TARGET_FPS = 30
-    MAX_BIOTS = 200
+    MAX_BIOTS = 300
     
     biots = [Biot(100,100)]
     
@@ -621,6 +620,7 @@ def main():
     mouse_down = False
     from timeit import default_timer as timer
     running = True
+    tick = 0
     while running:
         #check if we need to exit
         start = timer()
@@ -677,16 +677,20 @@ def main():
                 
                 
         
+        tick += 1
+        
         total_biots = debug_font.render('Total Biots: %s' % len(biots),False,(255,255,255) )
         screen.blit(total_biots,(1,1))
              
         end = timer()
-        loop_timer = debug_font.render("time: %s" % (end - start),False,(255,255,255) ) 
+        loop_timer = debug_font.render("Tick %s time: %s" % (tick,(end - start)),False,(255,255,255) ) 
         screen.blit(loop_timer,(1,height-loop_timer.get_size()[1]))
         #do the flip
         pygame.display.flip()
         clock.tick(TARGET_FPS)
-
+        
+#         if tick > 1000:
+#             running = False
 
 screen = pygame.display.set_mode((width, height))
 biots = [Biot(100,100)]
