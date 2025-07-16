@@ -31,7 +31,9 @@ pygame.init()
 debug_font = pygame.font.Font(pygame.font.match_font('calibri'),12)
 
 
-def addVectorsB2((angle1, length1), (angle2, length2)):
+def addVectorsB2(vec1, vec2):
+    (angle1, length1) = vec1
+    (angle2, length2) = vec2
     
 #     v1= b2Vec2(x,y)
 #     v2= b2Vec2(x2,y2)
@@ -80,7 +82,9 @@ def ccw(A,B,C):
     
 
 
-def addVectors((angle1, length1), (angle2, length2)):
+def addVectors(vec1, vec2):
+    (angle1, length1) = vec1
+    (angle2, length2) = vec2
     x  = math.sin(angle1) * length1 + math.sin(angle2) * length2
     y  = math.cos(angle1) * length1 + math.cos(angle2) * length2
     
@@ -164,12 +168,12 @@ class Biot:
         if use_gravity:
             (self.angle, self.speed) = addVectors((self.angle, self.speed), gravity)
         for my_arm in self.arms:
-            for node1,info in [ (node1,info) for node1,info in my_arm.idBiot.iteritems() if my_arm.idBiot[node1]['exists'] ]:
+            for node1,info in [ (node1,info) for node1,info in my_arm.idBiot.items() if my_arm.idBiot[node1]['exists'] ]:
                 if info['color'] == (0,255,255):
                     if info['movecounter'] < 1:
                         if info['seg_id'] > max(my_arm.gene.get('segGenes').keys()):
-                            print "IM BAAAAAACK"
-                            print "MISMATCH! %s %s" %(info['seg_id'],max(my_arm.gene.get('segGenes').keys()))
+                            print("IM BAAAAAACK")
+                            print("MISMATCH! %s %s" % (info['seg_id'], max(my_arm.gene.get('segGenes').keys())))
                         (self.angle,self.speed) = addVectors((self.angle, self.speed), (info['node'] * info['length']) )
                         info['movecounter'] = my_arm.gene.get('segGenes').get(info['seg_id']).get('movecounter')
                         if self.speed > max_speed:
@@ -187,7 +191,7 @@ class Biot:
         
     def findArm(self,x,y,):
         if DEBUG:
-            print ("me: %s %s mouse: %s %s" % (self.x,self.y,x,y))
+            print("me: %s %s mouse: %s %s" % (self.x, self.y, x, y))
         if self.boundingBox.collidepoint(x, y):
            return self
 
@@ -219,7 +223,7 @@ class Biot:
             (my_arm,your_arm,node1,node2) = result
             if my_arm.idBiot[node1]['color'] == (255,0,0):
                 if DEBUG:
-                    print "destroying Nodes: %s " % (node2)
+                    print("destroying Nodes: %s " % (node2))
                 if your_arm.idBiot[node2]['energy'] < bp.DEATH_ENERGY:
                     your_arm.destroyNode(node2)
                     your_arm.idBiot[node2]['energy'] = 0
@@ -230,7 +234,7 @@ class Biot:
                 my_arm.destroyNode(node1) 
             if your_arm.idBiot[node2]['color'] == (255,0,0):
                 if DEBUG:
-                    print "destroying Nodes: %s " % (node1)
+                    print("destroying Nodes: %s " % (node1))
                 if my_arm.idBiot[node1]['energy'] < bp.DEATH_ENERGY:
                     my_arm.destroyNode(node1)
                     my_arm.idBiot[node1]['energy'] = 0
@@ -246,9 +250,9 @@ class Biot:
 #TODO: there has got to be a way to make this faster
     def collide_line(self,other_biot):
         for my_arm in self.arms:
-            for node1,line1 in [ (node1,line1) for node1,line1 in my_arm.points.iteritems() if my_arm.idBiot[node1]['exists'] ]:
+            for node1,line1 in [ (node1,line1) for node1,line1 in my_arm.points.items() if my_arm.idBiot[node1]['exists'] ]:
                 for your_arm in other_biot.arms:
-                    for node2,line2 in [ (node2,line2) for node2,line2 in your_arm.points.iteritems() if your_arm.idBiot[node2]['exists'] ]:
+                    for node2,line2 in [ (node2,line2) for node2,line2 in your_arm.points.items() if your_arm.idBiot[node2]['exists'] ]:
                         if line_intersection(line1, line2):
                             return (my_arm,your_arm,node1,node2)
                             
@@ -325,12 +329,12 @@ class BiotArm:
 
     def getEnergy(self):
         energy = 0
-        for seg, info in self.idBiot.iteritems():
+        for seg, info in self.idBiot.items():
             energy += info['energy']
         return energy
 
     def caclulateEnergyGain(self):
-        for node, info in [ (node, info) for node,info in self.idBiot.iteritems() if info['exists']]:
+        for node, info in [ (node, info) for node,info in self.idBiot.items() if info['exists']]:
             if info['color'] == (0,255,0):
                 info['energy'] -= bp.GREEN_LOSS_PER_TICK
             elif info['color'] == (255,0,0):
@@ -343,13 +347,13 @@ class BiotArm:
                 self.destroyNode(node)
     
     def isDead(self):
-        return not(bool([node for node, info in self.idBiot.iteritems() if info['exists']]))
+        return not(bool([node for node, info in self.idBiot.items() if info['exists']]))
     
     def rebalanceEnergy(self):
         # energy is rebalanced across the tree
         # for each node, check energy
         # if > self.segementMaxEnergy take remainder and add to root.
-        for info in [info for nodeid,info in self.idBiot.iteritems() if nodeid != 'r' and info['energy'] > self.segmentMaxEnergy]:
+        for info in [info for nodeid,info in self.idBiot.items() if nodeid != 'r' and info['energy'] > self.segmentMaxEnergy]:
             extra = info['energy'] - self.segmentMaxEnergy
             info['energy'] = self.segmentMaxEnergy
             self.idBiot['r']['energy'] += extra
@@ -362,7 +366,7 @@ class BiotArm:
         self.harvestExtraEnergy()
     
     def _rebalanceEnergy(self,node):
-        for node2,armSegment in self.idBiot.iteritems():
+        for node2,armSegment in self.idBiot.items():
             if armSegment['parent_name'] == node:        
                 if self.idBiot[node]['energy'] > self.segmentMaxEnergy:
                     extra = self.idBiot[node]['energy'] - self.segmentMaxEnergy
@@ -371,13 +375,13 @@ class BiotArm:
                     self.idBiot[node]['energy'] = self.segmentMaxEnergy + extra_by_child
                     if self.idBiot[node2]['energy'] > 10:
                         self.idBiot[node2]['exists'] = True
-        for node2,armSegment in self.idBiot.iteritems():
+        for node2,armSegment in self.idBiot.items():
             if armSegment['parent_name'] == node:
                 self._rebalanceEnergy(node2)
     
     def harvestExtraEnergy(self):
-        for node2, armSegment in self.idBiot.iteritems():
-            if node2 not in [ armSegment['parent_name'] for node,armSegment in self.idBiot.iteritems() ]:
+        for node2, armSegment in self.idBiot.items():
+            if node2 not in [ armSegment['parent_name'] for node,armSegment in self.idBiot.items() ]:
                 if self.idBiot[node2]['energy'] > self.segmentMaxEnergy:
                     extra = self.idBiot[node2]['energy'] - self.segmentMaxEnergy
                     self.extraEnergy += extra
@@ -429,7 +433,7 @@ class BiotArm:
     def destroyNode(self,nodeid):
         self.idBiot[nodeid]['exists'] = False
         self.idBiot[nodeid]['energy'] = 0
-        for nodeid2,armSegment in self.idBiot.iteritems():
+        for nodeid2,armSegment in self.idBiot.items():
             if armSegment['parent_name'] == nodeid:
                 self.destroyNode(nodeid2)
                 
@@ -446,7 +450,7 @@ class BiotArm:
         count = 0
         
         
-        for nodeid, armSegment in sorted(self.idBiot.iteritems()):
+        for nodeid, armSegment in sorted(self.idBiot.items()):
             
             node    = armSegment.get('node')
             exists  = armSegment.get('exists')
@@ -527,7 +531,7 @@ def main():
                 (mx, my) = pygame.mouse.get_pos()
                 search = [b.findArm(mx,my) for b in biots if b.findArm(mx,my) is not None]
                 if DEBUG:
-                    print search
+                    print(search)
                 if search:
                     selected_biot = search[0]
                     move_biot = search[0]
@@ -538,7 +542,7 @@ def main():
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_n:
                     if DEBUG:
-                        print "Generating New Biots"
+                        print("Generating New Biots")
                     biots = makeBiots(None,4)
          
         if selected_biot:
