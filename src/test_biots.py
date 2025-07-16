@@ -31,7 +31,7 @@ def computeParentOffset(node,x,y):
 
 def drawVectorBiot(x,y):
     color = (0,0,0)
-    for (node,parent) in vectorBiot.iteritems():
+    for (node,parent) in vectorBiot.items():
         
         (px, py) = computeParentOffset(node,x,y)
         
