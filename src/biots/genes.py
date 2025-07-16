@@ -23,7 +23,7 @@ def genRandomBiotGene():
     gene['armGenes'] = genRandomArmGenes(gene['num_arms'])
     
     #always place arms equally far apart
-    for arm,armgene in gene['armGenes'].iteritems():
+    for arm,armgene in gene['armGenes'].items():
         gene['armGenes'][arm]['angle'] = (arm + 1) * math.pi * 1/(gene['num_arms'] / 2)
         
     return gene 
@@ -65,7 +65,7 @@ def _choose_value(parentValue,mutatedValueList):
 def mutate(parentGene):
     if shouldMutate(ran.randint(1, 100000), (1,5000)):
         newGene = {}
-        for key, value in parentGene.iteritems():
+        for key, value in parentGene.items():
             if key == 'armGenes':
                 continue
             newGene[key] = eval('mutate_%s(parentGene)' % (key))
@@ -94,7 +94,7 @@ def mutate_size(parentGene):
 def mutate_armGenes(parentGene,num_arms):
 
     newGene = {}
-    for arm,armGene in parentGene['armGenes'].iteritems():
+    for arm,armGene in parentGene['armGenes'].items():
         newGene[arm] = {}
         newGene[arm]['arm_id'] = arm
         newGene[arm]['angle'] = None
@@ -108,7 +108,7 @@ def mutate_armGenes(parentGene,num_arms):
                 newGene[arm] = genRandomArmGenes(1)[0]
                  
     #always place arms equally far apart
-    for arm,armGene in newGene.iteritems():
+    for arm,armGene in newGene.items():
         newGene[arm]['angle'] = (arm + 1) * math.pi * 1/(num_arms / 2)
     
     return newGene
@@ -126,7 +126,7 @@ def mutate_num_levels(armGene):
 def mutate_segGenes(segGenes,num_levels):
     newGene = {}
     random_negative = ran.randint(-1,1)
-    for seg, segGene in segGenes.iteritems():
+    for seg, segGene in segGenes.items():
         newGene[seg] = {}
         newGene[seg]['color'] = mutate_color(segGene)
         newGene[seg]['energy'] = mutate_energy(segGene)

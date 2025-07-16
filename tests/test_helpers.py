@@ -1,19 +1,14 @@
 import sys
 import types
-from lib2to3.refactor import RefactoringTool, get_fixers_from_package
+import importlib.util
 from pathlib import Path
 
 
 def load_biots_module():
-    """Load src/biots.py as a Python 3 module using lib2to3 conversion."""
-    # ensure package path for biots package
+    """Load src/biots.py as a module with minimal stubs."""
     src_path = Path(__file__).resolve().parents[1] / "src"
     if str(src_path) not in sys.path:
         sys.path.insert(0, str(src_path))
-
-    source = (src_path / "biots.py").read_text()
-    tool = RefactoringTool(get_fixers_from_package("lib2to3.fixes"))
-    converted = tool.refactor_string(source, "biots.py").__str__()
 
     # minimal pygame stub
     pygame_stub = types.ModuleType("pygame")
@@ -37,8 +32,9 @@ def load_biots_module():
     Box2D_stub.b2Vec2 = B2Vec2
     sys.modules.setdefault("Box2D", Box2D_stub)
 
-    module = types.ModuleType("biots_py3")
-    exec(converted, module.__dict__)
+    spec = importlib.util.spec_from_file_location("biots_py3", src_path / "biots.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
     return module
 
 
