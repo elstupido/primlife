@@ -52,3 +52,18 @@ docs/_build/
 
 # PyBuilder
 target/
+# Unreal Engine
+Binaries/
+DerivedDataCache/
+Intermediate/
+Saved/
+.vscode/
+.vs/
+*.sln
+*.suo
+*.opensdf
+*.sdf
+*.vcxproj*
+# Mac
+*.xcworkspace
+*.xcodeproj
